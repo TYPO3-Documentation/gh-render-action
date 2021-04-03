@@ -9,9 +9,10 @@ You will have to have a `Documentation` folder in your working directory. Then:
 
 ```
       - name: Render documentation
-        uses: ./actions/render/
+        uses: TYPO3-Documentation/gh-render-action@<version>
         id: rendering
-        with:
+        # Optional configuration:
+        # with:
           # if you are not rendering the current repository but a different one
           # enter the repository_url here:
           # repository_url: https://example.com/your-repository.git
