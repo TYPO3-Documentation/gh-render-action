@@ -21,7 +21,7 @@ You will have to have a `Documentation` folder in your working directory. Then:
           
           # this is the directory name in the final folder structure used to contain this 
           # version of the repository. If not given, the source branch name is used.
-          # target_branch_directory: ${{ github.event.inputs.target_branch_directory }}
+          # target_branch_directory: 'latest'
 
       - name: Publish archive with result
         uses: actions/upload-artifact@v1
