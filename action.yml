@@ -1,5 +1,8 @@
 name: 'Render TYPO3 Documentation'
 description: 'Use the up-to-date docker rendering workflow to render TYPO3 rst documentation with Sphinx.'
+branding:
+  icon: 'book-open'
+  color: 'orange'
 inputs:
   repository_url:
     description: 'Repository to render'
