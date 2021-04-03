@@ -10,6 +10,7 @@ You will have to have a `Documentation` folder in your working directory. Then:
 ```
       - name: Render documentation
         uses: ./actions/render/
+        id: rendering
         with:
           # if you are not rendering the current repository but a different one
           # enter the repository_url here:
@@ -28,3 +29,5 @@ You will have to have a `Documentation` folder in your working directory. Then:
           name: Rendered
           path: ${{ steps.rendering.outputs.renderedPath }}
 ```
+
+As you can see the actions provides the output path as output to use in further steps.
