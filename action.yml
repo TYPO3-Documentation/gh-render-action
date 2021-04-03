@@ -1,0 +1,111 @@
+name: 'Render TYPO3 Documentation'
+description: 'Use the up-to-date docker rendering workflow to render TYPO3 rst documentation with Sphinx.'
+inputs:
+  repository_url:
+    description: 'Repository to render'
+    required: false
+    default: https://github.com/${{ github.repository }}.git
+  source_branch:
+    description: 'Branch to render'
+    required: false
+  target_branch_directory:
+    description: 'Target Branch Directory'
+    required: false
+outputs:
+  renderedPath:
+    description: "The path to the final rendered documentation incl. language versions."
+    value: ${{ steps.output.outputs.renderedPath }}
+runs:
+  using: "composite"
+  steps:
+    - id: prepare
+      shell: bash
+      env:
+        GITHUB_REF: ${{ github.ref }}
+      run: |
+        if [[ '${{ inputs.source_branch }}' ]]; then
+          echo "source_branch=${{ inputs.source_branch }}" >> $GITHUB_ENV
+        else
+          echo "source_branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        fi
+        if [[ '${{ inputs.target_branch_directory }}' ]]; then
+          echo "target_branch_directory=${{ inputs.target_branch_directory }}" >> $GITHUB_ENV
+        else
+          echo "target_branch_directory=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        fi
+
+    - id: checkout
+      shell: bash
+      run: |
+        git clone --depth 1 ${{ inputs.repository_url }} -b ${{ env.source_branch }} t3docsproject
+
+    - id: jobfile
+      working-directory: t3docsproject
+      shell: bash
+      run: |
+        touch jobfile.json
+        cat << EOF > jobfile.json
+        {
+            "Overrides_cfg": {
+                "general": {
+                    "release": "${{ env.target_branch_directory }}"
+                },
+                "html_theme_options": {
+                    "docstypo3org": "yes"
+                }
+            }
+        }
+        EOF
+
+    - id: render
+      shell: bash
+      working-directory: t3docsproject
+      run: |
+        echo "::group::Rendering"
+        mkdir -p RenderedDocumentation
+        docker run --rm --user=$(id -u):$(id -g) \
+          -v $(pwd):/PROJECT:ro \
+          -v $(pwd)/RenderedDocumentation:/RESULT \
+          t3docs/render-documentation makehtml \
+            -c make_singlehtml 1 \
+            -c "/ALL/Menu/mainmenu.sh makehtml -c replace_static_in_html 1 -c make_singlehtml 1 -c jobfile /PROJECT/jobfile.json"
+        echo "::endgroup::"
+
+    - id: langhandling
+      shell: bash
+      working-directory: t3docsproject
+      run: |
+        echo "::group::Prepare final structure"
+
+        # if a result has been rendered for the main directory, we treat that as the 'en_us' version
+        if [ -d RenderedDocumentation/Result/project/0.0.0/ ]; then
+                echo "Handling main doc result as en-us version"
+                mkdir -p FinalDocumentation/en-us
+                # Move en-us files to target dir, including dot files
+                (shopt -s dotglob; mv RenderedDocumentation/Result/project/0.0.0/* FinalDocumentation/en-us)
+                # Remove the directory, all content has been moved
+                rmdir RenderedDocumentation/Result/project/0.0.0/
+                # Remove a possibly existing Localization.en_us directory, if it exists
+                rm -rf RenderedDocumentation/Result/project/en-us/
+        fi
+
+        # now see if other localization versions have been rendered. if so, move them to FinalDocumentation/, too
+        if [ "$(ls -A RenderedDocumentation/Result/project/)" ]; then
+            for LOCALIZATIONDIR in RenderedDocumentation/Result/project/*; do
+                    LOCALIZATION=`basename $LOCALIZATIONDIR`
+                    echo "Handling localized documentation version ${LOCALIZATION:?Localization could not be determined}"
+                    mkdir FinalDocumentation/${LOCALIZATION}
+                    (shopt -s dotglob; mv ${LOCALIZATIONDIR}/0.0.0/* FinalDocumentation/${LOCALIZATION})
+                    # Remove the localization dir, it should be empty now
+                    rmdir ${LOCALIZATIONDIR}/0.0.0/
+                    rmdir ${LOCALIZATIONDIR}
+            done
+        fi
+        echo "::endgroup::"
+
+    - id: output
+      shell: bash
+      working-directory: t3docsproject
+      run: |
+        rm -Rf RenderedDocumentation
+        echo "::set-output name=renderedPath::t3docsproject/FinalDocumentation/"
