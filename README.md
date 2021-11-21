@@ -15,7 +15,7 @@ You will have to have a `Documentation` folder in your working directory. Then:
         # with:
           # if you are not rendering the current repository but a different one
           # enter the repository_url here:
-          # repository_url: https://example.com/your-repository.git
+          # repository_url: https://example.org/your-repository.git
           
           # if you want to render a branch different from the current branch enter the name: 
           # source_branch: 'main'
