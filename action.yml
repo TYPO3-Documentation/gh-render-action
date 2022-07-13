@@ -72,7 +72,8 @@ runs:
           ghcr.io/t3docs/render-documentation:v3.0.dev25 \
             makehtml \
             -c make_singlehtml 1 \
-            -c "/ALL/Menu/mainmenu.sh makehtml -c replace_static_in_html 1 -c make_singlehtml 1 -c jobfile /PROJECT/jobfile.json"
+            -c replace_static_in_html 1 \
+            -c jobfile /PROJECT/jobfile.json"
         echo "::endgroup::"
 
     - id: langhandling
