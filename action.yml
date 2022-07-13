@@ -73,7 +73,7 @@ runs:
             makehtml \
             -c make_singlehtml 1 \
             -c replace_static_in_html 1 \
-            -c jobfile /PROJECT/jobfile.json"
+            -c jobfile /PROJECT/jobfile.json
         echo "::endgroup::"
 
     - id: langhandling
