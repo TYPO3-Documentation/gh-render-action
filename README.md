@@ -7,7 +7,7 @@ container.
 
 You will have to have a `Documentation` folder in your working directory. Then:
 
-```
+```yaml
       - name: Render documentation
         uses: TYPO3-Documentation/gh-render-action@<version>
         id: rendering
