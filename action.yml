@@ -42,7 +42,20 @@ runs:
       run: |
         git clone --depth 1 ${{ inputs.repository_url }} -b ${{ env.source_branch }} t3docsproject
 
+    - id: enable_guides
+      working-directory: t3docsproject
+      shell: bash
+      run: test -e guides.xml && echo "GUIDES=true" || echo "GUIDES=false" >> "GITHUB_OUTPUT"
+
+    - uses: TYPO3-Documentation/render-guides@main
+      id: render-guides
+      if: steps.enable_guides.outputs.GUIDES == 'true'
+      with:
+        input: t3docsproject
+        output: RenderedDocumentation
+
     - id: jobfile
+      if: steps.enable_guides.outputs.GUIDES == 'false'
       working-directory: t3docsproject
       shell: bash
       run: |
@@ -61,6 +74,7 @@ runs:
         EOF
 
     - id: render
+      if: steps.enable_guides.outputs.GUIDES == 'false'
       shell: bash
       working-directory: t3docsproject
       run: |
