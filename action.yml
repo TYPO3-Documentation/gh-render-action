@@ -48,15 +48,17 @@ runs:
       run: (test -e guides.xml && echo "GUIDES=true" || echo "GUIDES=false") >> $GITHUB_OUTPUT
 
     - id: pre-render-guides
+      working-directory: t3docsproject
       if: steps.enable_guides.outputs.GUIDES == 'true'
       shell: bash
       run: mkdir -p RenderedDocumentation/Result/project/0.0.0
 
     - uses: TYPO3-Documentation/render-guides@main
       id: render-guides
+      working-directory: t3docsproject
       if: steps.enable_guides.outputs.GUIDES == 'true'
       with:
-        input: t3docsproject/Documentation
+        input: Documentation
         output: RenderedDocumentation/Result/project/0.0.0
 
     - id: jobfile
