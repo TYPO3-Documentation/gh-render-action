@@ -50,7 +50,7 @@ runs:
     - id: pre-render-guides
       if: steps.enable_guides.outputs.GUIDES == 'true'
       shell: bash
-      run: makedir -p RenderedDocumentation/Result/project/0.0.0
+      run: mkdir -p RenderedDocumentation/Result/project/0.0.0
 
     - uses: TYPO3-Documentation/render-guides@main
       id: render-guides
