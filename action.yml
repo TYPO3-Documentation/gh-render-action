@@ -56,7 +56,7 @@ runs:
       id: render-guides
       if: steps.enable_guides.outputs.GUIDES == 'true'
       with:
-        input: t3docsproject
+        input: t3docsproject/Documentation
         output: RenderedDocumentation/Result/project/0.0.0
 
     - id: jobfile
