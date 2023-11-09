@@ -45,7 +45,7 @@ runs:
     - id: enable_guides
       working-directory: t3docsproject
       shell: bash
-      run: (test -e guides.xml && echo "GUIDES=true" || echo "GUIDES=false") >> $GITHUB_OUTPUT
+      run: (test -e Documentation/guides.xml && echo "GUIDES=true" || echo "GUIDES=false") >> $GITHUB_OUTPUT
 
     - id: pre-render-guides
       working-directory: t3docsproject
@@ -55,10 +55,11 @@ runs:
 
     - uses: TYPO3-Documentation/render-guides@main
       id: render-guides
+      working-directory: t3docsproject
       if: steps.enable_guides.outputs.GUIDES == 'true'
       with:
-        input: t3docsproject/Documentation
-        output: t3docsproject/RenderedDocumentation/Result/project/0.0.0
+        config: Documentation/
+        output: RenderedDocumentation/Result/project/0.0.0
 
     - id: jobfile
       if: steps.enable_guides.outputs.GUIDES == 'false'
