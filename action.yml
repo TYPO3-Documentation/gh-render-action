@@ -55,11 +55,10 @@ runs:
 
     - uses: TYPO3-Documentation/render-guides@main
       id: render-guides
-      working-directory: t3docsproject
       if: steps.enable_guides.outputs.GUIDES == 'true'
       with:
-        config: Documentation/
-        output: RenderedDocumentation/Result/project/0.0.0
+        config: t3docsproject/Documentation/
+        output: t3docsproject/RenderedDocumentation/Result/project/0.0.0
 
     - id: jobfile
       if: steps.enable_guides.outputs.GUIDES == 'false'
