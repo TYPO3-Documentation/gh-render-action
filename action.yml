@@ -58,6 +58,8 @@ runs:
       if: steps.enable_guides.outputs.GUIDES == 'true'
       with:
         working-directory: t3docsproject
+        working-dir: t3docsproject
+        verbose: 3
         config: ./Documentation/
         output: ./RenderedDocumentation/Result/project/0.0.0
       args: |
