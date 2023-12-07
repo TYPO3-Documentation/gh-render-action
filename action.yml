@@ -62,8 +62,6 @@ runs:
         verbose: 3
         config: ./Documentation/
         output: ./RenderedDocumentation/Result/project/0.0.0
-      args: |
-        -vvv --config ./Documentation/
 
     - id: jobfile
       if: steps.enable_guides.outputs.GUIDES == 'false'
