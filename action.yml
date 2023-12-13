@@ -1,5 +1,5 @@
 name: 'Render TYPO3 Documentation'
-description: 'Use the up-to-date docker rendering workflow to render TYPO3 rst documentation with Sphinx.'
+description: 'Use the up-to-date docker rendering workflow to render TYPO3 rst documentation with Sphinx or phpDocumentor when guides.xml present.'
 branding:
   icon: 'book-open'
   color: 'orange'
@@ -60,6 +60,9 @@ runs:
         working-directory: t3docsproject
         config: ./t3docsproject/Documentation/
         output: ./RenderedDocumentation/Result/project/0.0.0
+        configure-branch: ${{ env.source_branch }}
+        configure-project-release: ${{ env.target_branch_directory }}
+        configure-project-version: ${{ env.target_branch_directory }}
 
     - id: jobfile
       if: steps.enable_guides.outputs.GUIDES == 'false'
