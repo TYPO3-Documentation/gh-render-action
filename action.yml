@@ -53,7 +53,7 @@ runs:
       shell: bash
       run: mkdir -p RenderedDocumentation/Result/project/0.0.0
 
-    - uses: TYPO3-Documentation/render-guides@main
+    - uses: TYPO3-Documentation/render-guides@stable
       id: render-guides
       if: steps.enable_guides.outputs.GUIDES == 'true'
       with:
