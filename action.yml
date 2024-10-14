@@ -1,5 +1,5 @@
 name: 'Render TYPO3 Documentation'
-description: 'Use the up-to-date docker rendering workflow to render TYPO3 rst documentation with Sphinx or phpDocumentor when guides.xml present.'
+description: 'Uses render-guides to render documentation.'
 branding:
   icon: 'book-open'
   color: 'orange'
@@ -42,20 +42,13 @@ runs:
       run: |
         git clone --depth 1 ${{ inputs.repository_url }} -b ${{ env.source_branch }} t3docsproject
 
-    - id: enable_guides
-      working-directory: t3docsproject
-      shell: bash
-      run: (test -e Documentation/guides.xml && echo "GUIDES=true" || echo "GUIDES=false") >> $GITHUB_OUTPUT
-
     - id: pre-render-guides
       working-directory: t3docsproject
-      if: steps.enable_guides.outputs.GUIDES == 'true'
       shell: bash
       run: mkdir -p RenderedDocumentation/Result/project/0.0.0
 
     - uses: TYPO3-Documentation/render-guides@main
       id: render-guides
-      if: steps.enable_guides.outputs.GUIDES == 'true'
       with:
         working-directory: /github/workspace/t3docsproject
         config: /github/workspace/t3docsproject/Documentation/
@@ -64,45 +57,7 @@ runs:
         configure-project-release: ${{ env.target_branch_directory }}
         configure-project-version: ${{ env.target_branch_directory }}
 
-    - id: jobfile
-      if: steps.enable_guides.outputs.GUIDES == 'false'
-      working-directory: t3docsproject
-      shell: bash
-      run: |
-        touch jobfile.json
-        cat << EOF > jobfile.json
-        {
-            "Overrides_cfg": {
-                "general": {
-                    "release": "${{ env.target_branch_directory }}"
-                },
-                "html_theme_options": {
-                    "docstypo3org": "yes"
-                }
-            }
-        }
-        EOF
-
-    - id: render
-      if: steps.enable_guides.outputs.GUIDES == 'false'
-      shell: bash
-      working-directory: t3docsproject
-      run: |
-        echo "::group::Rendering"
-        mkdir -p RenderedDocumentation
-        docker run --rm --user=$(id -u):$(id -g) \
-          --pull always \
-          -v $(pwd):/PROJECT:ro \
-          -v $(pwd)/RenderedDocumentation:/RESULT \
-          ghcr.io/t3docs/render-documentation:latest \
-            makehtml \
-            -c make_singlehtml 1 \
-            -c replace_static_in_html 1 \
-            -c jobfile /PROJECT/jobfile.json
-        echo "::endgroup::"
-
     - id: render-guides-localization
-      if: steps.enable_guides.outputs.GUIDES == 'true'
       shell: bash
       working-directory: t3docsproject
       run: |
