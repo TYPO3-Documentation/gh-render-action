@@ -42,10 +42,27 @@ runs:
       run: |
         git clone --depth 1 ${{ inputs.repository_url }} -b ${{ env.source_branch }} t3docsproject
 
+    - id: enable_guides
+      working-directory: t3docsproject
+      shell: bash
+      run: (test -e Documentation/guides.xml && echo "MIGRATED=true" || echo "MIGRATED=false") >> $GITHUB_OUTPUT
+
     - id: pre-render-guides
       working-directory: t3docsproject
       shell: bash
       run: mkdir -p RenderedDocumentation/Result/project/0.0.0
+
+    - id: migrate
+      if: steps.enable_guides.outputs.MIGRATED == 'false'
+      shell: bash
+      working-directory: t3docsproject
+      run: |
+        echo "::warning file=Documentation/Settings.cfg,line=1,title=Please migrate::Your project not yet using the php based rendering, please migrate: https://docs.typo3.org/m/typo3/docs-how-to-document/main/en-us/Howto/Migration/Index.html"
+        docker run --rm --user=$(id -u):$(id -g) \
+          --pull always \
+          -v $(pwd):/project \
+          ghcr.io/typo3-documentation/render-guides:latest \
+            migrate Documentation
 
     - uses: TYPO3-Documentation/render-guides@main
       id: render-guides
