@@ -26,17 +26,18 @@ runs:
       env:
         GITHUB_REF: ${{ github.ref }}
       run: |
-        # Ensure Documentation directory exists
-        mkdir -p Documentation
-        
-        # If neither Index.rst nor guides.xml exists, check for README.rst
-        if [[ ! -f Documentation/Index.rst && ! -f Documentation/guides.xml ]]; then
-          if [[ -f README.rst ]]; then
-            echo "Copying README.rst to Documentation/Index.rst"
-            cp README.rst Documentation/Index.rst
-          elif [[ -f README.md ]]; then
-            echo "Copying README.md to Documentation/Index.md"
-            cp README.md Documentation/Index.md
+        # Set source_branch properly
+        if [[ -n "${{ inputs.source_branch }}" ]]; then
+          echo "Using provided source branch: ${{ inputs.source_branch }}"
+          echo "source_branch=${{ inputs.source_branch }}" >> $GITHUB_ENV
+        else
+          detected_branch=${GITHUB_REF#refs/heads/}
+          branch_exists=$(git ls-remote --heads ${{ inputs.repository_url }} $detected_branch | wc -l)
+          if [[ $branch_exists -eq 0 ]]; then
+            echo "Branch '$detected_branch' not found, using 'main'."
+            echo "source_branch=main" >> $GITHUB_ENV
+          else
+            echo "source_branch=$detected_branch" >> $GITHUB_ENV
           fi
         fi
 
@@ -52,12 +53,12 @@ runs:
         # Ensure Documentation directory exists
         mkdir -p Documentation
         
-        # Find README files, ignoring case
+        # Find README files (ignoring case)
         readme_rst=$(find . -maxdepth 1 -type f -iname "README.rst" | head -n 1)
         readme_md=$(find . -maxdepth 1 -type f -iname "README.md" | head -n 1)
         readme_no_ext=$(find . -maxdepth 1 -type f -iname "README" | head -n 1)
         
-        # If neither Index.rst nor guides.xml exists, process README files
+        # Only copy if Documentation/Index.rst or guides.xml is missing
         if [[ ! -f Documentation/Index.rst && ! -f Documentation/guides.xml ]]; then
           if [[ -n "$readme_rst" ]]; then
             echo "Copying $readme_rst to Documentation/Index.rst"
