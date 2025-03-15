@@ -93,11 +93,15 @@ runs:
       working-directory: t3docsproject
       run: |
         echo "::warning file=Documentation/settings.cfg,line=1,title=Please migrate::Forced migration activated. Your project is not yet using the PHP-based rendering, please properly migrate: https://docs.typo3.org/m/typo3/docs-how-to-document/main/en-us/Howto/Migration/Index.html"
-        docker run --rm --user=$(id -u):$(id -g) \
+        
+        # Run migration, but do not exit on failure
+        if ! docker run --rm --user=$(id -u):$(id -g) \
           --pull always \
           -v $(pwd):/project \
           ghcr.io/typo3-documentation/render-guides:latest \
-            migrate Documentation
+            migrate Documentation; then
+          echo "::warning::Migration failed, but continuing with the workflow..."
+        fi
 
     - uses: TYPO3-Documentation/render-guides@main
       id: render-guides
