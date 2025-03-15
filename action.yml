@@ -45,7 +45,12 @@ runs:
     - id: enable_guides
       working-directory: t3docsproject
       shell: bash
-      run: (test -e Documentation/guides.xml && echo "MIGRATED=true" || echo "MIGRATED=false") >> $GITHUB_OUTPUT
+      run: |
+        if [[ -f Documentation/settings.cfg && ! -f Documentation/guides.xml ]]; then
+          echo "MIGRATED=false" >> $GITHUB_OUTPUT
+        else
+          echo "MIGRATED=true" >> $GITHUB_OUTPUT
+        fi
 
     - id: pre-render-guides
       working-directory: t3docsproject
@@ -53,11 +58,11 @@ runs:
       run: mkdir -p RenderedDocumentation/Result/project/0.0.0
 
     - id: migrate
-      if: steps.enable_guides.outputs.MIGRATED == 'false'
+      if: steps.enable_guides.outputs.MIGRATED == 'false' && hashFiles('Documentation/settings.cfg') != ''
       shell: bash
       working-directory: t3docsproject
       run: |
-        echo "::warning file=Documentation/Settings.cfg,line=1,title=Please migrate::Forced migration activated. Your project is not yet using the PHP-based rendering, please properly migrate: https://docs.typo3.org/m/typo3/docs-how-to-document/main/en-us/Howto/Migration/Index.html"
+        echo "::warning file=Documentation/settings.cfg,line=1,title=Please migrate::Forced migration activated. Your project is not yet using the PHP-based rendering, please properly migrate: https://docs.typo3.org/m/typo3/docs-how-to-document/main/en-us/Howto/Migration/Index.html"
         docker run --rm --user=$(id -u):$(id -g) \
           --pull always \
           -v $(pwd):/project \
