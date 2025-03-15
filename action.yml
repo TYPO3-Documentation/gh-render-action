@@ -26,21 +26,50 @@ runs:
       env:
         GITHUB_REF: ${{ github.ref }}
       run: |
-        if [[ '${{ inputs.source_branch }}' ]]; then
-          echo "source_branch=${{ inputs.source_branch }}" >> $GITHUB_ENV
-        else
-          echo "source_branch=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
-        fi
-        if [[ '${{ inputs.target_branch_directory }}' ]]; then
-          echo "target_branch_directory=${{ inputs.target_branch_directory }}" >> $GITHUB_ENV
-        else
-          echo "target_branch_directory=${GITHUB_REF#refs/heads/}" >> $GITHUB_ENV
+        # Ensure Documentation directory exists
+        mkdir -p Documentation
+        
+        # If neither Index.rst nor guides.xml exists, check for README.rst
+        if [[ ! -f Documentation/Index.rst && ! -f Documentation/guides.xml ]]; then
+          if [[ -f README.rst ]]; then
+            echo "Copying README.rst to Documentation/Index.rst"
+            cp README.rst Documentation/Index.rst
+          elif [[ -f README.md ]]; then
+            echo "Copying README.md to Documentation/Index.md"
+            cp README.md Documentation/Index.md
+          fi
         fi
 
     - id: checkout
       shell: bash
       run: |
         git clone --depth 1 ${{ inputs.repository_url }} -b ${{ env.source_branch }} t3docsproject
+
+    - id: prepare-index
+      working-directory: t3docsproject
+      shell: bash
+      run: |
+        # Ensure Documentation directory exists
+        mkdir -p Documentation
+        
+        # Find README files, ignoring case
+        readme_rst=$(find . -maxdepth 1 -type f -iname "README.rst" | head -n 1)
+        readme_md=$(find . -maxdepth 1 -type f -iname "README.md" | head -n 1)
+        readme_no_ext=$(find . -maxdepth 1 -type f -iname "README" | head -n 1)
+        
+        # If neither Index.rst nor guides.xml exists, process README files
+        if [[ ! -f Documentation/Index.rst && ! -f Documentation/guides.xml ]]; then
+          if [[ -n "$readme_rst" ]]; then
+            echo "Copying $readme_rst to Documentation/Index.rst"
+            cp "$readme_rst" Documentation/Index.rst
+          elif [[ -n "$readme_md" ]]; then
+            echo "Copying $readme_md to Documentation/Index.md"
+            cp "$readme_md" Documentation/Index.md
+          elif [[ -n "$readme_no_ext" ]]; then
+            echo "Assuming $readme_no_ext is Markdown and copying to Documentation/Index.md"
+            cp "$readme_no_ext" Documentation/Index.md
+          fi
+        fi
 
     - id: enable_guides
       working-directory: t3docsproject
