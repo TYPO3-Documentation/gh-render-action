@@ -105,7 +105,6 @@ runs:
         working-directory: /github/workspace/t3docsproject
         config: /github/workspace/t3docsproject/Documentation/
         output: ./RenderedDocumentation/Result/project/0.0.0
-        configure-branch: ${{ env.source_branch }}
         configure-project-release: ${{ env.target_branch_directory }}
         configure-project-version: ${{ env.target_branch_directory }}
 
