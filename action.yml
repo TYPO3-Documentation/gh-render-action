@@ -99,7 +99,7 @@ runs:
           echo "::warning::Migration failed, but continuing with the workflow..."
         fi
 
-    - uses: TYPO3-Documentation/render-guides@main
+    - uses: TYPO3-Documentation/render-guides@946b1a3158f2a8571569820e0da1637e70a7ff06
       id: render-guides
       with:
         working-directory: /github/workspace/t3docsproject
